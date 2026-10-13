@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Council of Genius - Storybook Autonomy Engine</title>
+  <style>
+    :root {
+      --bg-dark: #070709;
+      --card-bg: rgba(18, 18, 24, 0.75);
+      --amber-glow: #ff5500;
+      --amber-gold: #ffaa00;
+      --glass-border: rgba(255, 255, 255, 0.12);
+      --text-main: #f0f0f5;
+      --text-dim: #9090a0;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px;
+      overflow-x: hidden;
+    }
+
+    /* GLASS CONTAINER */
+    .app-viewport {
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* HEADER HUB */
+    .header-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    .brand-title { font-size: 1.1rem; font-weight: 800; tracking: 1px; color: #fff; text-transform: uppercase; }
+    .brand-sub { font-size: 0.7rem; color: var(--amber-gold); font-weight: 600; }
+
+    /* PAGE AUTONOMY DIAL / SLIDER */
+    .autonomy-box {
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: 28px;
+      padding: 24px;
+      text-align: center;
+      box-shadow: 0 12px 40px rgba(255, 85, 0, 0.08);
+      position: relative;
+    }
+    .autonomy-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      background: rgba(255, 85, 0, 0.15);
+      border: 1px solid var(--amber-glow);
+      border-radius: 20px;
+      font-size: 0.75rem;
+      color: var(--amber-gold);
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    .dial-val { font-size: 2.8rem; font-weight: 900; color: #fff; text-shadow: 0 0 20px rgba(255, 85, 0, 0.5); }
+    .dial-desc { font-size: 0.8rem; color: var(--text-dim); margin-top: 6px; }
+
+    .slider-container { margin-top: 20px; }
+    input[type=range] {
+      -webkit-appearance: none;
+      width: 100%;
+      background: transparent;
+    }
+    input[type=range]:focus { outline: none; }
+    input[type=range]::-webkit-slider-runnable-track {
+      width: 100%;
+      height: 12px;
+      cursor: pointer;
+      background: #1a1a24;
+      border-radius: 10px;
+      border: 1px solid var(--glass-border);
+    }
+    input[type=range]::-webkit-slider-thumb {
+      height: 28px;
+      width: 28px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #ffaa00, #ff4500);
+      cursor: pointer;
+      -webkit-appearance: none;
+      margin-top: -9px;
+      box-shadow: 0 0 15px var(--amber-glow), inset 0 2px 4px rgba(255,255,255,0.8);
+    }
+
+    /* 3D GLASS MARBLE BUTTONS */
+    .marble-btn {
+      background: radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.25), rgba(0, 0, 0, 0.8)), linear-gradient(135deg, #1f1f2e, #0a0a0f);
+      border: 1px solid var(--glass-border);
+      border-radius: 50px;
+      padding: 16px 24px;
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.6), inset 0 2px 5px rgba(255,255,255,0.3);
+      transition: all 0.2s ease;
+      width: 100%;
+    }
+    .marble-btn:active {
+      transform: scale(0.97);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.8), inset 0 1px 2px rgba(255,255,255,0.2);
+    }
+
+    /* ACTOR CASTING DEPT */
+    .section-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: 28px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .card-head { font-size: 0.9rem; font-weight: 700; color: #fff; text-transform: uppercase; tracking: 0.5px; }
+    
+    .actors-grid { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 6px; }
+    .actor-chip {
+      flex: 0 0 auto;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 160px;
+    }
+    .actor-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #ff8800, #441100);
+      border: 2px solid var(--amber-gold);
+    }
+    .actor-name { font-size: 0.85rem; font-weight: 700; }
+    .actor-role { font-size: 0.7rem; color: var(--text-dim); }
+
+    /* STORY CANVAS PAGE */
+    .story-page {
+      background: rgba(10, 10, 14, 0.9);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .page-num { font-size: 0.75rem; color: var(--amber-gold); font-weight: 800; }
+    .story-text { font-size: 0.95rem; line-height: 1.5; color: #e0e0ed; }
+    
+    /* DYNAMIC INTERACTION CONTROLS */
+    .control-layer { display: flex; flex-direction: column; gap: 10px; transition: all 0.3s ease; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+
+  <div class="app-viewport">
+    
+    <!-- HEADER HUB -->
+    <div class="header-card">
+      <div>
+        <div class="brand-title">Council of Genius</div>
+        <div class="brand-sub">Neuro-Adaptive Story Studio</div>
+      </div>
+      <div style="width: 12px; height: 12px; background: #00ff88; border-radius: 50%; box-shadow: 0 0 10px #00ff88;"></div>
+    </div>
+
+    <!-- AI ACTOR CASTING DEPT -->
+    <div class="section-card">
+      <div class="card-head">🎬 Active AI Actors (Persistent Visuals)</div>
+      <div class="actors-grid">
+        <div class="actor-chip">
+          <div class="actor-avatar"></div>
+          <div>
+            <div class="actor-name">Kaelen</div>
+            <div class="actor-role">Lead Protagonist</div>
+          </div>
+        </div>
+        <div class="actor-chip">
+          <div class="actor-avatar" style="background: radial-gradient(circle at 30% 30%, #00aaff, #002244);"></div>
+          <div>
+            <div class="actor-name">Vesper</div>
+            <div class="actor-role">AI Operative</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PER-PAGE AUTONOMY DIAL -->
+    <div class="autonomy-box">
+      <div class="autonomy-badge">PAGE 1 AUTONOMY CONTROL</div>
+      <div class="dial-val" id="dialVal">10%</div>
+      <div class="dial-desc" id="dialDesc">PASSENGER MODE: AI auto-generates scene script, character action & visual frames.</div>
+      
+      <div class="slider-container">
+        <input type="range" id="autonomySlider" min="1" max="10" value="1" oninput="updateAutonomy(this.value)">
+      </div>
+    </div>
+
+    <!-- STORY CANVAS -->
+    <div class="story-page">
+      <div class="page-num">SCENE 01 • PAGE 01</div>
+      <div class="story-text" id="storyText">
+        Kaelen steps into the glass neon corridor. Vesper glances up from her holoscreen, her signature leather jacket gleaming under amber overhead strobes.
+      </div>
+
+      <!-- DYNAMIC CONTROLS BASED ON AUTONOMY DIAL -->
+      <div class="control-layer" id="controlLayer">
+        <!-- Default Notch 1 (10%): Single Marble Action -->
+        <button class="marble-btn" onclick="triggerAction('Auto-Advancing Scene...')">
+          ✨ Ignite Next Frame (Auto-Pilot)
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // SYNTHETIC SOUND ENGINE (WEB AUDIO API)
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    
+    function playClickSound(freq = 150) {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+      gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.08);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.08);
+    }
+
+    function updateAutonomy(val) {
+      playClickSound(100 + (val * 40));
+      const dialVal = document.getElementById('dialVal');
+      const dialDesc = document.getElementById('dialDesc');
+      const controlLayer = document.getElementById('controlLayer');
+
+      const notch = parseInt(val);
+      dialVal.innerText = `${notch * 10}%`;
+
+      if (notch <= 3) {
+        dialDesc.innerText = "PASSENGER MODE: Machine handles all scripting, wardrobe, and scene rendering.";
+        controlLayer.innerHTML = `
+          <button class="marble-btn" onclick="triggerAction('Auto-Advancing Scene...')">
+            ✨ Ignite Next Frame (Auto-Pilot)
+          </button>`;
+      } else if (notch <= 7) {
+        dialDesc.innerText = "CO-WRITER MODE: Pick key character decisions and branching plot beats.";
+        controlLayer.innerHTML = `
+          <button class="marble-btn" onclick="triggerAction('Kaelen confronts Vesper')">
+            💥 Kaelen Confronts Vesper
+          </button>
+          <button class="marble-btn" style="background: linear-gradient(135deg, #111, #222);" onclick="triggerAction('Vesper triggers alarm')">
+            🚨 Vesper Triggers Alarm
+          </button>`;
+      } else {
+        dialDesc.innerText = "DIRECTOR MODE: Full granular override over dialogue, camera angle, and GPU seeds.";
+        controlLayer.innerHTML = `
+          <input type="text" style="width:100%; padding:12px; border-radius:12px; background:rgba(255,255,255,0.05); border:1px solid var(--glass-border); color:#fff;" placeholder="Type custom script or camera angle override...">
+          <button class="marble-btn" onclick="triggerAction('Executing Custom Script...')">
+            🎬 Render Director Shot
+          </button>`;
+      }
+    }
+
+    function triggerAction(actionName) {
+      playClickSound(300);
+      const storyText = document.getElementById('storyText');
+      storyText.innerText = `[${actionName}] Executing frame render via Modal API pipeline... Kaelen responds in real time while AI Wardrobe locks consistency.`;
+    }
+  </script>
+</body>
+</html>
