@@ -1,0 +1,589 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Council of Genius - Video Studio</title>
+  
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+
+    :root {
+      --bg-dark: #07070a;
+      --panel-bg: rgba(22, 22, 30, 0.6);
+      --panel-border: rgba(255, 255, 255, 0.08);
+      --glass-highlight: rgba(255, 255, 255, 0.15);
+      --accent-emerald: #00ff88;
+      --accent-amber: #ffaa00;
+      --text-main: #f0f0f5;
+      --text-muted: #8a8a9e;
+      
+      --shadow-deep: 0 20px 40px rgba(0, 0, 0, 0.8);
+      --shadow-glow: 0 0 20px rgba(0, 255, 136, 0.3);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
+    
+    body {
+      background-color: var(--bg-dark);
+      background-image: radial-gradient(circle at 50% 0%, rgba(20, 20, 35, 1), var(--bg-dark) 70%);
+      color: var(--text-main);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 12px;
+      overflow-x: hidden;
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      padding-bottom: 40px;
+    }
+
+    .section-title {
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+      margin-left: 4px;
+    }
+
+    .panel {
+      background: var(--panel-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--panel-border);
+      border-radius: 24px;
+      padding: 20px;
+      box-shadow: inset 0 1px 1px var(--glass-highlight), var(--shadow-deep);
+    }
+
+    .cast-scroll {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      scrollbar-width: none;
+    }
+    .cast-scroll::-webkit-scrollbar { display: none; }
+    
+    .cast-member {
+      flex: 0 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      opacity: 0.5;
+      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+    .cast-member.selected {
+      opacity: 1;
+    }
+    .cast-avatar {
+      width: 64px;
+      height: 64px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, #2a2a35, #111116);
+      border: 1px solid var(--panel-border);
+      box-shadow: inset 0 2px 4px rgba(255,255,255,0.1), 0 4px 10px rgba(0,0,0,0.5);
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: rgba(255,255,255,0.2);
+    }
+    .cast-member.selected .cast-avatar {
+      border-color: var(--accent-amber);
+      box-shadow: inset 0 2px 4px rgba(255,255,255,0.2), 0 0 15px rgba(255, 170, 0, 0.4);
+      color: var(--accent-amber);
+    }
+    .cast-name {
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .setting-group { margin-bottom: 24px; }
+    .setting-group:last-child { margin-bottom: 0; }
+    
+    .setting-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .setting-label {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+    .setting-value-display {
+      font-size: 0.8rem;
+      color: var(--accent-amber);
+      font-weight: 800;
+    }
+
+    .segmented-control {
+      display: flex;
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 16px;
+      padding: 4px;
+      border: 1px solid var(--panel-border);
+      box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
+    }
+    .segment {
+      flex: 1;
+      text-align: center;
+      padding: 10px 0;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .segment.active {
+      background: linear-gradient(180deg, rgba(60,60,80,0.8), rgba(30,30,45,0.8));
+      color: #fff;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.2);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    /* Ratio specific segments */
+    .ratio-segment {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 12px 0;
+    }
+    .ratio-icon {
+      border: 2px solid currentColor;
+      border-radius: 4px;
+      opacity: 0.7;
+    }
+    .segment.active .ratio-icon { opacity: 1; border-color: var(--accent-amber); }
+    .ratio-16-9 { width: 24px; height: 14px; }
+    .ratio-1-1 { width: 18px; height: 18px; }
+    .ratio-9-16 { width: 14px; height: 24px; }
+
+    .slider-container {
+      position: relative;
+      width: 100%;
+      height: 40px;
+      display: flex;
+      align-items: center;
+    }
+    input[type=range] {
+      -webkit-appearance: none;
+      width: 100%;
+      background: transparent;
+      position: absolute;
+      z-index: 2;
+    }
+    input[type=range]:focus { outline: none; }
+    input[type=range]::-webkit-slider-runnable-track {
+      width: 100%;
+      height: 12px;
+      cursor: pointer;
+      background: rgba(0,0,0,0.5);
+      border-radius: 8px;
+      border: 1px solid var(--panel-border);
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.8);
+    }
+    input[type=range]::-webkit-slider-thumb {
+      height: 28px;
+      width: 28px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #fff, #a0a0b0);
+      cursor: pointer;
+      -webkit-appearance: none;
+      margin-top: -9px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.8), inset 0 -2px 4px rgba(0,0,0,0.2);
+      transition: transform 0.1s;
+    }
+    input[type=range]:active::-webkit-slider-thumb {
+      transform: scale(0.9);
+    }
+    .slider-labels {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 8px;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .summary-chip {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--panel-border);
+      border-radius: 12px;
+      padding: 10px 16px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #fff;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .summary-icon {
+      color: var(--accent-amber);
+    }
+
+    .generate-btn {
+      margin-top: auto;
+      background: linear-gradient(135deg, #00d2ff, #00ff88);
+      border: none;
+      border-radius: 20px;
+      padding: 18px;
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #000;
+      cursor: pointer;
+      box-shadow: inset 0 2px 4px rgba(255,255,255,0.6), var(--shadow-glow);
+      transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      position: relative;
+      overflow: hidden;
+    }
+    .generate-btn::after {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%;
+      width: 50%; height: 100%;
+      background: linear-gradient(to right, transparent, rgba(255,255,255,0.5), transparent);
+      transform: skewX(-20deg);
+      animation: shine 3s infinite;
+    }
+    @keyframes shine {
+      0% { left: -100%; }
+      20% { left: 200%; }
+      100% { left: 200%; }
+    }
+    .generate-btn:active {
+      transform: scale(0.96);
+      box-shadow: inset 0 4px 8px rgba(0,0,0,0.3), 0 0 10px rgba(0, 255, 136, 0.2);
+    }
+    
+    .vip-tag {
+      font-size: 0.5rem;
+      background: linear-gradient(90deg, #ffd700, #ffaa00);
+      color: #000;
+      padding: 2px 4px;
+      border-radius: 4px;
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      font-weight: 800;
+    }
+    .segment { position: relative; }
+
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- Cast / Story Bible -->
+    <div>
+      <div class="section-title">Story Bible • Scene Cast</div>
+      <div class="cast-scroll" id="castContainer">
+        <!-- Cast items injected by JS -->
+      </div>
+    </div>
+
+    <!-- Render Settings Panel -->
+    <div class="panel">
+      
+      <!-- Resolution -->
+      <div class="setting-group">
+        <div class="setting-header">
+          <span class="setting-label">Mode</span>
+        </div>
+        <div class="segmented-control" id="resControl">
+          <div class="segment active" data-val="720p">720p</div>
+          <div class="segment" data-val="1080p">1080p <span class="vip-tag">VIP</span></div>
+          <div class="segment" data-val="4K">4K <span class="vip-tag">VIP</span></div>
+        </div>
+      </div>
+
+      <!-- Length -->
+      <div class="setting-group">
+        <div class="setting-header">
+          <span class="setting-label">Length</span>
+          <span class="setting-value-display" id="lengthDisplay">5s</span>
+        </div>
+        <div class="slider-container">
+          <input type="range" id="lengthSlider" min="3" max="15" value="5">
+        </div>
+        <div class="slider-labels">
+          <span>3s</span>
+          <span>15s</span>
+        </div>
+      </div>
+
+      <!-- Video Ratio -->
+      <div class="setting-group">
+        <div class="setting-header">
+          <span class="setting-label">Video Ratio</span>
+        </div>
+        <div class="segmented-control" id="ratioControl">
+          <div class="segment ratio-segment" data-val="16:9">
+            <div class="ratio-icon ratio-16-9"></div>
+            <span>16:9</span>
+          </div>
+          <div class="segment ratio-segment" data-val="1:1">
+            <div class="ratio-icon ratio-1-1"></div>
+            <span>1:1</span>
+          </div>
+          <div class="segment ratio-segment active" data-val="9:16">
+            <div class="ratio-icon ratio-9-16"></div>
+            <span>9:16</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Number of Outputs -->
+      <div class="setting-group">
+        <div class="setting-header">
+          <span class="setting-label">Number of Outputs</span>
+        </div>
+        <div class="segmented-control" id="outputsControl">
+          <div class="segment" data-val="1">1</div>
+          <div class="segment" data-val="2">2 <span class="vip-tag">VIP</span></div>
+          <div class="segment active" data-val="3">3 <span class="vip-tag">VIP</span></div>
+          <div class="segment" data-val="4">4 <span class="vip-tag">VIP</span></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Summary & Action -->
+    <div>
+      <div class="summary-chip" id="summaryChip">
+        <span class="summary-icon">⬡</span>
+        <span id="summaryText">720p • 5s • 9:16 • 3</span>
+        <span>•</span>
+        <span id="actorCountText">1 Actor</span>
+      </div>
+    </div>
+
+    <button class="generate-btn" id="generateBtn">
+      Generate Scene
+    </button>
+
+  </div>
+
+  <script>
+    // App State
+    const state = {
+      resolution: '720p',
+      length: 5,
+      ratio: '9:16',
+      outputs: '3',
+      selectedActors: ['Kaelen']
+    };
+
+    const actors = [
+      { id: 'Kaelen', initials: 'K', color: '#ffaa00' },
+      { id: 'Vesper', initials: 'V', color: '#00e1ff' },
+      { id: 'Soren',  initials: 'S', color: '#e100ff' },
+      { id: 'Nyx',    initials: 'N', color: '#00ff88' },
+      { id: 'Rook',   initials: 'R', color: '#ff3366' }
+    ];
+
+    const AudioEngine = (function() {
+      let ctx = null;
+
+      function initContext() {
+        if (!ctx) {
+          ctx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (ctx.state === 'suspended') {
+          ctx.resume();
+        }
+      }
+
+      // Play a deep marble 'clink' or 'pop' for buttons/toggles
+      function playClink() {
+        if (!ctx) return;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        
+        osc.type = 'sine';
+        // Quick pitch drop for a physical 'pop' sound
+        osc.frequency.setValueAtTime(600, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.05);
+        
+        gain.gain.setValueAtTime(0.4, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
+        
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.05);
+      }
+
+      // Play a clicking/ratchet sound for sliders
+      function playRatchet() {
+        if (!ctx) return;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(150, ctx.currentTime);
+        
+        gain.gain.setValueAtTime(0.1, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.02);
+        
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.02);
+      }
+
+      // Heavy power-up sound for Generate
+      function playPowerUp() {
+        if (!ctx) return;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        
+        osc.type = 'sawtooth';
+        // Sweep up from low bass to mid
+        osc.frequency.setValueAtTime(50, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + 0.4);
+        
+        gain.gain.setValueAtTime(0, ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.3, ctx.currentTime + 0.1);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
+        
+        // Add a lowpass filter for a deeper cinematic feel
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(200, ctx.currentTime);
+        filter.frequency.exponentialRampToValueAtTime(2000, ctx.currentTime + 0.4);
+
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(ctx.destination);
+        
+        osc.start();
+        osc.stop(ctx.currentTime + 0.6);
+      }
+
+      return { initContext, playClink, playRatchet, playPowerUp };
+    })();
+
+    // Ensure audio context starts on first interaction anywhere
+    document.body.addEventListener('pointerdown', AudioEngine.initContext, { once: true });
+
+    function updateSummary() {
+      document.getElementById('summaryText').textContent = 
+        `${state.resolution} • ${state.length}s • ${state.ratio} • ${state.outputs}`;
+      
+      const count = state.selectedActors.length;
+      document.getElementById('actorCountText').textContent = 
+        `${count} ${count === 1 ? 'Actor' : 'Actors'}`;
+    }
+
+    function renderCast() {
+      const container = document.getElementById('castContainer');
+      container.innerHTML = '';
+      
+      actors.forEach(actor => {
+        const div = document.createElement('div');
+        div.className = `cast-member ${state.selectedActors.includes(actor.id) ? 'selected' : ''}`;
+        div.innerHTML = `
+          <div class="cast-avatar" style="--accent-amber: ${actor.color}">${actor.initials}</div>
+          <div class="cast-name">${actor.id}</div>
+        `;
+        div.onclick = () => {
+          AudioEngine.playClink();
+          const idx = state.selectedActors.indexOf(actor.id);
+          if (idx > -1) {
+            // Don't deselect if it's the last one
+            if (state.selectedActors.length > 1) {
+              state.selectedActors.splice(idx, 1);
+              div.classList.remove('selected');
+            }
+          } else {
+            state.selectedActors.push(actor.id);
+            div.classList.add('selected');
+          }
+          updateSummary();
+        };
+        container.appendChild(div);
+      });
+    }
+
+    function setupSegmentedControl(containerId, stateKey) {
+      const container = document.getElementById(containerId);
+      const segments = container.querySelectorAll('.segment');
+      
+      segments.forEach(seg => {
+        seg.onclick = () => {
+          if(state[stateKey] === seg.dataset.val) return; // already active
+          AudioEngine.playClink();
+          
+          segments.forEach(s => s.classList.remove('active'));
+          seg.classList.add('active');
+          state[stateKey] = seg.dataset.val;
+          updateSummary();
+        };
+      });
+    }
+
+    function setupSlider() {
+      const slider = document.getElementById('lengthSlider');
+      const display = document.getElementById('lengthDisplay');
+      let lastVal = slider.value;
+
+      slider.addEventListener('input', (e) => {
+        const val = parseInt(e.target.value);
+        if (val !== lastVal) {
+          AudioEngine.playRatchet();
+          lastVal = val;
+          state.length = val;
+          display.textContent = `${val}s`;
+          updateSummary();
+        }
+      });
+    }
+
+    // Initialize
+    renderCast();
+    setupSegmentedControl('resControl', 'resolution');
+    setupSegmentedControl('ratioControl', 'ratio');
+    setupSegmentedControl('outputsControl', 'outputs');
+    setupSlider();
+    updateSummary();
+
+    // Generate Button Action
+    document.getElementById('generateBtn').onclick = () => {
+      AudioEngine.playPowerUp();
+      const btn = document.getElementById('generateBtn');
+      const originalText = btn.innerText;
+      btn.innerText = "INITIALIZING RENDER...";
+      btn.style.pointerEvents = "none";
+      btn.style.filter = "brightness(1.5)";
+      
+      setTimeout(() => {
+        btn.innerText = originalText;
+        btn.style.pointerEvents = "auto";
+        btn.style.filter = "none";
+      }, 1500);
+    };
+
+  </script>
+</body>
+</html>
+```
