@@ -1,0 +1,724 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Council of Genius - Neuro-Adaptive Hub</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Google Fonts: Inter & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        onyx: '#08080A',
+                        'onyx-card': '#111116',
+                        'onyx-border': '#22222D',
+                        amber: {
+                            glow: '#FF4500',
+                            bright: '#FF7700',
+                            accent: '#FF8C00'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #08080A;
+            color: #E2E8F0;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* Warm Ember / Amber Bottom Ambient Glow */
+        .amber-ambient-glow {
+            position: fixed;
+            bottom: -250px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 130vw;
+            height: 550px;
+            background: radial-gradient(ellipse at center, rgba(255, 69, 0, 0.22) 0%, rgba(255, 140, 0, 0.1) 40%, rgba(8, 8, 10, 0) 75%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* 3D Glassy Tactile Marble Button */
+        .marble-btn {
+            position: relative;
+            background: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.04) 50%, rgba(0, 0, 0, 0.5) 100%), #15151C;
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            box-shadow: 
+                0 10px 25px -5px rgba(0, 0, 0, 0.8),
+                inset 0 1px 1.5px rgba(255, 255, 255, 0.35),
+                inset 0 -2px 6px rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(12px);
+            transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+            overflow: hidden;
+            user-select: none;
+        }
+
+        .marble-btn::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at center, rgba(255, 140, 0, 0.28) 0%, transparent 60%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .marble-btn:hover {
+            transform: translateY(-2px) scale(1.02);
+            border-color: rgba(255, 140, 0, 0.5);
+            box-shadow: 
+                0 15px 30px -5px rgba(255, 69, 0, 0.3),
+                0 10px 20px -5px rgba(0, 0, 0, 0.9),
+                inset 0 1px 2px rgba(255, 255, 255, 0.6);
+        }
+
+        .marble-btn:hover::before {
+            opacity: 1;
+        }
+
+        .marble-btn:active {
+            transform: translateY(1px) scale(0.98);
+            box-shadow: 
+                0 4px 12px -2px rgba(0, 0, 0, 0.9),
+                inset 0 2px 6px rgba(0, 0, 0, 0.85);
+        }
+
+        .marble-btn-primary {
+            background: radial-gradient(circle at 35% 30%, rgba(255, 200, 120, 0.4) 0%, rgba(255, 69, 0, 0.3) 50%, rgba(120, 20, 0, 0.7) 100%), #220B04;
+            border: 1px solid rgba(255, 140, 0, 0.6);
+            box-shadow: 
+                0 10px 25px -5px rgba(255, 69, 0, 0.45),
+                inset 0 1px 2px rgba(255, 220, 180, 0.7),
+                inset 0 -2px 6px rgba(0, 0, 0, 0.8);
+        }
+
+        /* Glassmorphism Panel Frame */
+        .glass-panel {
+            background: rgba(17, 17, 22, 0.78);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.65);
+        }
+
+        /* Dial Notch Tick Marks */
+        .notch-tick {
+            position: absolute;
+            width: 2px;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.18);
+            transform-origin: bottom center;
+            transition: all 0.2s ease;
+        }
+
+        .notch-tick.active {
+            background: #FF7700;
+            box-shadow: 0 0 10px #FF7700;
+        }
+
+        /* Dopamine Completion Glow Effect */
+        @keyframes dopaminePulse {
+            0% { box-shadow: 0 0 10px rgba(255, 140, 0, 0.2); }
+            50% { box-shadow: 0 0 35px rgba(255, 140, 0, 0.8), 0 0 60px rgba(255, 69, 0, 0.4); }
+            100% { box-shadow: 0 0 10px rgba(255, 140, 0, 0.2); }
+        }
+
+        .dopamine-glow {
+            animation: dopaminePulse 2s infinite ease-in-out;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #08080A;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #22222D;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #FF7700;
+        }
+    </style>
+</head>
+<body class="relative flex flex-col min-h-screen text-slate-200">
+
+    <!-- Ambient Bottom Glow -->
+    <div class="amber-ambient-glow"></div>
+
+    <div class="relative z-10 flex flex-col flex-1 max-w-7xl w-full mx-auto px-4 py-6 gap-6">
+
+        <!-- DASHBOARD & SERVER STATUS HEADER -->
+        <header class="glass-panel rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4 border-b border-amber-500/20">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl marble-btn-primary flex items-center justify-center text-amber-400 font-black text-xl shadow-lg">
+                    ⚡
+                </div>
+                <div>
+                    <h1 class="font-black text-lg tracking-wide bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-100 to-amber-400">
+                        COUNCIL OF GENIUS
+                    </h1>
+                    <p class="text-[11px] text-slate-400 font-mono flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        NEURO-ADAPTIVE UNIFIED HUB
+                    </p>
+                </div>
+            </div>
+
+            <!-- Real-time Server Health Monitoring -->
+            <div class="flex items-center gap-2 sm:gap-3 overflow-x-auto py-1 text-xs font-mono">
+                <!-- IONOS Node -->
+                <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-onyx-card border border-slate-800/80">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                    <span class="text-slate-400">IONOS Gateway:</span>
+                    <span class="text-emerald-400 font-semibold">Active</span>
+                </div>
+
+                <!-- DigitalOcean Node -->
+                <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-onyx-card border border-slate-800/80">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                    <span class="text-slate-400">DigitalOcean:</span>
+                    <span class="text-amber-400 font-semibold">209.97.158.152</span>
+                    <span class="text-[10px] bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded">4GB Swap Ready</span>
+                </div>
+
+                <!-- Modal API Node -->
+                <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-onyx-card border border-slate-800/80">
+                    <span class="w-2 h-2 rounded-full bg-sky-400 animate-ping"></span>
+                    <span class="text-slate-400">Modal API:</span>
+                    <span class="text-sky-400 font-semibold">Standby</span>
+                </div>
+            </div>
+        </header>
+
+        <section class="glass-panel rounded-3xl p-6 sm:p-8 relative overflow-hidden transition-all duration-300">
+            <div class="flex flex-col lg:flex-row items-center justify-between gap-6">
+                
+                <!-- Dial Description -->
+                <div class="max-w-xl text-center lg:text-left">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-semibold mb-3">
+                        <i class="fa-solid fa-brain"></i> Neuro-Psychological Executive Load Adaptor
+                    </div>
+                    <h2 class="text-2xl sm:text-3xl font-extrabold text-white mb-2">10-Notch Dynamic Autonomy Dial</h2>
+                    <p class="text-sm text-slate-400 leading-relaxed">
+                        Rotate the tactile lock dial below to set your exact cognitive capacity for today. Low energy hides granular controls; hyperfocus unlocks direct Modal pipeline framing.
+                    </p>
+                </div>
+
+                <!-- 10-Notch Tactile Dial Control -->
+                <div class="flex flex-col items-center gap-4">
+                    <div class="relative w-64 h-32 flex justify-center items-end select-none">
+                        <!-- Dial Arc Notches Container -->
+                        <div id="notches-container" class="absolute w-full h-full pointer-events-none"></div>
+
+                        <!-- Knob Core -->
+                        <div id="dial-knob" class="relative w-28 h-28 rounded-full marble-btn flex items-center justify-center cursor-grab active:cursor-grabbing border-2 border-amber-500/40 shadow-2xl">
+                            <div class="w-20 h-20 rounded-full bg-onyx border border-slate-700/60 flex items-center justify-center shadow-inner">
+                                <div id="knob-indicator" class="absolute top-2 w-1.5 h-5 bg-amber-500 rounded-full shadow-[0_0_8px_#FF7700]"></div>
+                                <span id="dial-value-text" class="text-2xl font-black font-mono text-amber-400">10%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mode Indicator Badge -->
+                    <div class="flex items-center gap-3">
+                        <button id="prev-notch-btn" class="marble-btn w-8 h-8 rounded-full flex items-center justify-center text-xs text-slate-300">
+                            <i class="fa-solid fa-minus"></i>
+                        </button>
+                        <div class="text-center min-w-[220px]">
+                            <span id="mode-title" class="text-xs font-bold uppercase tracking-widest text-amber-400 block">LOW ENERGY MODE</span>
+                            <span id="mode-subtitle" class="text-[11px] text-slate-400 font-mono">(Notch 1 of 10 — 10% Autonomy)</span>
+                        </div>
+                        <button id="next-notch-btn" class="marble-btn w-8 h-8 rounded-full flex items-center justify-center text-xs text-slate-300">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <main class="grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1">
+            
+            <!-- LEFT PANEL: Dynamic Control Inputs (Scales based on Autonomy Dial) -->
+            <div id="left-workspace" class="lg:col-span-5 flex flex-col gap-6">
+                
+                <!-- Zero-Friction Concept Dump Pad -->
+                <div class="glass-panel rounded-3xl p-6 flex flex-col gap-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-lightbulb text-amber-400"></i>
+                            <h3 class="font-bold text-white text-base">Idea & Concept Pad</h3>
+                        </div>
+                        <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400">Zero-Friction Voice/Text</span>
+                    </div>
+
+                    <textarea id="prompt-input" rows="4" class="w-full bg-onyx/80 border border-slate-800 rounded-2xl p-4 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/50 resize-none font-sans" placeholder="Drop raw thoughts, script notes, scene ideas, or voice transcriptions here..."></textarea>
+
+                    <div class="flex items-center justify-between gap-3">
+                        <button id="mic-btn" class="marble-btn px-4 py-2.5 rounded-xl text-xs font-medium text-slate-300 flex items-center gap-2">
+                            <i class="fa-solid fa-microphone text-amber-400"></i> Voice Input
+                        </button>
+
+                        <button id="ignite-btn" class="marble-btn marble-btn-primary px-6 py-2.5 rounded-xl text-xs font-bold text-white flex items-center gap-2">
+                            <span>Ignite Production</span>
+                            <i class="fa-solid fa-fire-flame-curved"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- DYNAMICALLY ADAPTABLE CONTROL MATRIX -->
+                <div id="dynamic-controls-panel" class="glass-panel rounded-3xl p-6 flex flex-col gap-5">
+                    <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+                        <h3 class="font-bold text-white text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-sliders text-amber-400"></i>
+                            <span>Adaptable Control Matrix</span>
+                        </h3>
+                        <span id="control-level-badge" class="text-xs font-mono px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 font-semibold">Low Energy Mode</span>
+                    </div>
+
+                    <!-- LOW ENERGY / 10% AUTOMATION (Default Visible) -->
+                    <div id="low-energy-controls" class="space-y-4">
+                        <p class="text-xs text-slate-400 leading-relaxed">
+                            <i class="fa-solid fa-circle-check text-emerald-400 mr-1"></i> Executive shielding active. The machine automatically crafts scripting, storyboarding, and rendering.
+                        </p>
+                    </div>
+
+                    <!-- 50% COLLABORATOR MODE (Hidden at 10%, visible at 50%+) -->
+                    <div id="collaborator-controls" class="space-y-4 transition-all duration-300 hidden">
+                        <div class="border-t border-slate-800/80 pt-3">
+                            <label class="text-xs font-medium text-slate-400 mb-1.5 block">AI Visual Style Preset</label>
+                            <select class="w-full bg-onyx border border-slate-800 rounded-xl p-2.5 text-xs text-slate-300 focus:outline-none focus:border-amber-500">
+                                <option>Cinematic Hyper-Realism (Modal GPU)</option>
+                                <option>Graphic Novel / Dark Noir</option>
+                                <option>Unreal Engine 5 Render</option>
+                                <option>Classic Storybook Oil Illustration</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="text-xs font-medium text-slate-400 mb-1.5 block">Tap-to-Approve AI Drafts</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button class="marble-btn p-2 rounded-xl text-center text-xs font-medium text-emerald-400 border-emerald-500/30">
+                                    <i class="fa-solid fa-check mr-1"></i> Auto-Approve
+                                </button>
+                                <button class="marble-btn p-2 rounded-xl text-center text-xs font-medium text-amber-400 border-amber-500/30">
+                                    <i class="fa-solid fa-pen mr-1"></i> Review Frames
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 100% DIRECTOR MODE (Hidden at low/medium, visible at 100%) -->
+                    <div id="director-controls" class="space-y-4 transition-all duration-300 hidden">
+                        <div class="border-t border-slate-800/80 pt-3">
+                            <label class="text-xs font-medium text-slate-400 mb-1.5 block">Modal API Framing & Prompt Weights</label>
+                            <div class="space-y-2 font-mono text-xs">
+                                <div>
+                                    <div class="flex justify-between text-[11px] text-slate-400 mb-1">
+                                        <span>Modal Guidance Scale (CFG)</span>
+                                        <span class="text-amber-400 font-bold">7.5</span>
+                                    </div>
+                                    <input type="range" min="1" max="20" value="7.5" class="w-full accent-amber-500 bg-slate-800 h-1.5 rounded-lg">
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-[11px] text-slate-400 mb-1">
+                                        <span>Keyframe Sampling Steps</span>
+                                        <span class="text-amber-400 font-bold">50 Steps</span>
+                                    </div>
+                                    <input type="range" min="10" max="150" value="50" class="w-full accent-amber-500 bg-slate-800 h-1.5 rounded-lg">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="text-xs font-medium text-slate-400 mb-1.5 block">Direct Scene Override Payload</label>
+                            <input type="text" value="--modal-target=burst-a10g --framing=close-up --fps=60" class="w-full bg-onyx border border-slate-800 rounded-xl p-2.5 text-xs font-mono text-slate-400 focus:outline-none">
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div id="right-workspace" class="lg:col-span-7 flex flex-col gap-6">
+                
+                <div id="storybook-container" class="glass-panel rounded-3xl p-6 flex flex-col flex-1 gap-5 min-h-[480px]">
+                    
+                    <!-- Mode Selector Tabs -->
+                    <div class="flex items-center justify-between border-b border-slate-800/80 pb-4">
+                        <div>
+                            <h3 class="font-extrabold text-white text-base flex items-center gap-2">
+                                <i class="fa-solid fa-clapperboard text-amber-400"></i>
+                                <span>Storybook Mode Engine</span>
+                            </h3>
+                            <p class="text-xs text-slate-400">Content Production Studio Canvas</p>
+                        </div>
+
+                        <!-- Mode Selector Tabs -->
+                        <div class="flex items-center gap-1 bg-onyx p-1 rounded-2xl border border-slate-800">
+                            <button class="mode-tab px-3 py-1.5 rounded-xl text-xs font-semibold bg-amber-500 text-black shadow" data-mode="Books">Books</button>
+                            <button class="mode-tab px-3 py-1.5 rounded-xl text-xs font-medium text-slate-400 hover:text-white" data-mode="Short Films">Films</button>
+                            <button class="mode-tab px-3 py-1.5 rounded-xl text-xs font-medium text-slate-400 hover:text-white" data-mode="TikToks">TikToks</button>
+                            <button class="mode-tab px-3 py-1.5 rounded-xl text-xs font-medium text-slate-400 hover:text-white" data-mode="Ads">Ads</button>
+                        </div>
+                    </div>
+
+                    <!-- Live AI Generation Pipeline Progress Anchors -->
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between text-xs font-mono">
+                            <span class="text-slate-400 flex items-center gap-2">
+                                <i class="fa-solid fa-circle-notch text-amber-400" id="progress-spinner"></i>
+                                <span id="progress-step-text">Pipeline Standing By</span>
+                            </span>
+                            <span id="progress-percent" class="text-amber-400 font-bold">0%</span>
+                        </div>
+                        <div class="w-full h-2.5 bg-onyx rounded-full overflow-hidden p-0.5 border border-slate-800">
+                            <div id="progress-bar" class="h-full bg-gradient-to-r from-amber-600 to-amber-400 rounded-full w-0 transition-all duration-300"></div>
+                        </div>
+
+                        <!-- 4 Step Pipeline Badges -->
+                        <div class="grid grid-cols-4 gap-2 text-[10px] font-mono text-center pt-1">
+                            <div id="badge-step-1" class="py-1 rounded bg-slate-900 text-slate-500 border border-slate-800">1. Scripting</div>
+                            <div id="badge-step-2" class="py-1 rounded bg-slate-900 text-slate-500 border border-slate-800">2. Storyboard</div>
+                            <div id="badge-step-3" class="py-1 rounded bg-slate-900 text-slate-500 border border-slate-800">3. Modal GPU</div>
+                            <div id="badge-step-4" class="py-1 rounded bg-slate-900 text-slate-500 border border-slate-800">4. Assembly</div>
+                        </div>
+                    </div>
+
+                    <!-- Interactive Canvas / Generated Render Preview -->
+                    <div class="relative flex-1 bg-onyx/90 border border-slate-800/80 rounded-2xl flex flex-col items-center justify-center p-6 overflow-hidden min-h-[260px]">
+                        
+                        <!-- Standby View -->
+                        <div id="canvas-placeholder" class="text-center space-y-3">
+                            <div class="w-16 h-16 rounded-full marble-btn mx-auto flex items-center justify-center text-amber-400 text-2xl">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-slate-200 text-sm">Storybook Studio Ready</h4>
+                                <p class="text-xs text-slate-500 max-w-xs mx-auto">Enter an idea concept on the left pad and click 'Ignite Production' to run the pipeline.</p>
+                            </div>
+                        </div>
+
+                        <!-- Active Render Display (Revealed on Completion) -->
+                        <div id="canvas-rendered" class="absolute inset-0 bg-cover bg-center hidden flex-col justify-end p-6" style="background-image: linear-gradient(to top, rgba(8,8,10,0.95), rgba(8,8,10,0.2)), url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop');">
+                            <div class="space-y-2">
+                                <span class="px-2.5 py-0.5 rounded bg-amber-500 text-black text-[10px] font-black uppercase tracking-wider">
+                                    <i class="fa-solid fa-circle-check mr-1"></i> Render Complete
+                                </span>
+                                <h4 class="text-lg font-black text-white">Quantum Ego: IONOS & DigitalOcean Genesis</h4>
+                                <p class="text-xs text-slate-300 line-clamp-2">Neural compute nodes operating at peak efficiency across Modal serverless GPU clusters in deep onyx space.</p>
+                                
+                                <div class="flex items-center gap-3 pt-2">
+                                    <button class="marble-btn marble-btn-primary px-4 py-2 rounded-xl text-xs font-bold text-white flex items-center gap-1.5">
+                                        <i class="fa-solid fa-play text-amber-300"></i> Play Production
+                                    </button>
+                                    <button class="marble-btn px-3 py-2 rounded-xl text-xs font-semibold text-slate-300">
+                                        <i class="fa-solid fa-arrow-down-to-line"></i> Export
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </main>
+
+        <!-- FOOTER BAR -->
+        <footer class="text-center py-2 text-xs text-slate-600 font-mono flex items-center justify-between border-t border-slate-800/50">
+            <span>Council of Genius Hub &bull; Neuro-Adaptive Studio</span>
+            <span>IONOS Gateway &bull; DigitalOcean (4GB Swap Active)</span>
+        </footer>
+
+    </div>
+
+    <script>
+        // GLOBAL APP STATE
+        const appState = {
+            notch: 1, // 1 to 10 notches
+            isGenerating: false,
+            currentMode: 'Books',
+            audioCtx: null
+        };
+
+        // NOTCH CONFIGURATIONS
+        const notchMap = {
+            1: { title: "LOW ENERGY MODE", subtitle: "10% Autonomy — Maximum Executive Shielding", level: 1 },
+            2: { title: "LIGHT ASSIST", subtitle: "20% Autonomy — Express Prompt Execution", level: 1 },
+            3: { title: "EXPRESS CO-PILOT", subtitle: "30% Autonomy — Single-Tap Pipeline", level: 1 },
+            4: { title: "BALANCED ASSIST", subtitle: "40% Autonomy — Quick Suggestions Active", level: 2 },
+            5: { title: "COLLABORATOR MODE", subtitle: "50% Autonomy — Dual-Panel Tap-to-Approve Workflows", level: 2 },
+            6: { title: "ACTIVE COLLABORATOR", subtitle: "60% Autonomy — Script & Frame Tweaks", level: 2 },
+            7: { title: "EXTENDED CO-CREATOR", subtitle: "70% Autonomy — Visual Style Fine-Tuning", level: 2 },
+            8: { title: "DIRECTOR MODE", subtitle: "80% Autonomy — Granular Keyframe Timeline", level: 3 },
+            9: { title: "MASTER STUDIO CONTROL", subtitle: "90% Autonomy — Full Sampling Overrides", level: 3 },
+            10: { title: "FULL DIRECTOR MODE", subtitle: "100% Autonomy — Direct Modal API Parameter Weights", level: 3 }
+        };
+
+        // AUDIO TACTILE CLICK GENERATOR (Web Audio API)
+        function playTactileClick(freq = 440) {
+            try {
+                if (!appState.audioCtx) {
+                    appState.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (appState.audioCtx.state === 'suspended') {
+                    appState.audioCtx.resume();
+                }
+                const osc = appState.audioCtx.createOscillator();
+                const gain = appState.audioCtx.createGain();
+
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, appState.audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(100, appState.audioCtx.currentTime + 0.035);
+
+                gain.gain.setValueAtTime(0.12, appState.audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, appState.audioCtx.currentTime + 0.035);
+
+                osc.connect(gain);
+                gain.connect(appState.audioCtx.destination);
+
+                osc.start();
+                osc.stop(appState.audioCtx.currentTime + 0.035);
+            } catch (e) {
+                // Audio silent fallback
+            }
+        }
+
+        // RENDER DIAL RADIAL NOTCHES
+        function renderNotches() {
+            const container = document.getElementById('notches-container');
+            container.innerHTML = '';
+
+            const total = 10;
+            const startAngle = -110;
+            const endAngle = 110;
+            const step = (endAngle - startAngle) / (total - 1);
+
+            for (let i = 1; i <= total; i++) {
+                const angle = startAngle + (i - 1) * step;
+                const tick = document.createElement('div');
+                tick.className = `notch-tick ${i <= appState.notch ? 'active' : ''}`;
+                tick.style.left = 'calc(50% - 1px)';
+                tick.style.bottom = '10px';
+                tick.style.transform = `rotate(${angle}deg) translateY(-85px)`;
+                container.appendChild(tick);
+            }
+        }
+
+        // UPDATE UI BASED ON AUTONOMY DIAL NOTCH
+        function updateAutonomyUI() {
+            const config = notchMap[appState.notch];
+            const percent = appState.notch * 10;
+
+            document.getElementById('dial-value-text').innerText = `${percent}%`;
+
+            // Angle indicator formula
+            const angle = -110 + (appState.notch - 1) * (220 / 9);
+            document.getElementById('knob-indicator').style.transform = `rotate(${angle}deg)`;
+
+            // Titles
+            document.getElementById('mode-title').innerText = config.title;
+            document.getElementById('mode-subtitle').innerText = `(Notch ${appState.notch} of 10 — ${percent}% Autonomy)`;
+            document.getElementById('control-level-badge').innerText = `${config.title}`;
+
+            renderNotches();
+
+            // Dynamic Panel Visibility based on level
+            const lowControls = document.getElementById('low-energy-controls');
+            const collabControls = document.getElementById('collaborator-controls');
+            const directorControls = document.getElementById('director-controls');
+
+            if (config.level === 1) {
+                collabControls.classList.add('hidden');
+                directorControls.classList.add('hidden');
+            } else if (config.level === 2) {
+                collabControls.classList.remove('hidden');
+                directorControls.classList.add('hidden');
+            } else if (config.level === 3) {
+                collabControls.classList.remove('hidden');
+                directorControls.classList.remove('hidden');
+            }
+
+            playTactileClick(320 + appState.notch * 40);
+        }
+
+        // INITIALIZATION
+        window.onload = function() {
+            renderNotches();
+            updateAutonomyUI();
+
+            // Notch Decrement/Increment Controls
+            document.getElementById('prev-notch-btn').addEventListener('click', () => {
+                if (appState.notch > 1) {
+                    appState.notch--;
+                    updateAutonomyUI();
+                }
+            });
+
+            document.getElementById('next-notch-btn').addEventListener('click', () => {
+                if (appState.notch < 10) {
+                    appState.notch++;
+                    updateAutonomyUI();
+                }
+            });
+
+            // Rotary Knob Drag Interaction
+            const knob = document.getElementById('dial-knob');
+            let isDragging = false;
+
+            knob.addEventListener('mousedown', () => isDragging = true);
+            window.addEventListener('mouseup', () => isDragging = false);
+
+            window.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                const rect = knob.getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
+
+                const radians = Math.atan2(e.clientX - centerX, -(e.clientY - centerY));
+                let degrees = radians * (180 / Math.PI);
+
+                if (degrees < -110) degrees = -110;
+                if (degrees > 110) degrees = 110;
+
+                const newNotch = Math.min(10, Math.max(1, Math.round((degrees + 110) / (220 / 9)) + 1));
+                if (newNotch !== appState.notch) {
+                    appState.notch = newNotch;
+                    updateAutonomyUI();
+                }
+            });
+
+            // Storybook Mode Selector Tabs
+            const tabs = document.querySelectorAll('.mode-tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(t => {
+                        t.classList.remove('bg-amber-500', 'text-black', 'shadow');
+                        t.classList.add('text-slate-400');
+                    });
+                    tab.classList.add('bg-amber-500', 'text-black', 'shadow');
+                    tab.classList.remove('text-slate-400');
+                    appState.currentMode = tab.dataset.mode;
+                    playTactileClick(600);
+                });
+            });
+
+            // Voice Input Mic Simulation
+            document.getElementById('mic-btn').addEventListener('click', () => {
+                playTactileClick(750);
+                const input = document.getElementById('prompt-input');
+                input.value = `Voice Prompt Captured [${appState.currentMode} Mode]: Generate a high-energy chapter sequence featuring DigitalOcean nodes and Modal API serverless execution.`;
+            });
+
+            // IGNITE PRODUCTION PIPELINE SIMULATOR
+            document.getElementById('ignite-btn').addEventListener('click', () => {
+                if (appState.isGenerating) return;
+
+                const text = document.getElementById('prompt-input').value.trim();
+                if (!text) {
+                    alert('Please enter an idea concept or use Voice Input first!');
+                    return;
+                }
+
+                appState.isGenerating = true;
+
+                const progressBar = document.getElementById('progress-bar');
+                const progressStepText = document.getElementById('progress-step-text');
+                const progressPercent = document.getElementById('progress-percent');
+                const progressSpinner = document.getElementById('progress-spinner');
+                const canvasPlaceholder = document.getElementById('canvas-placeholder');
+                const canvasRendered = document.getElementById('canvas-rendered');
+                const storybookContainer = document.getElementById('storybook-container');
+
+                // Reset visual indicators
+                storybookContainer.classList.remove('dopamine-glow');
+                canvasRendered.classList.add('hidden');
+                canvasRendered.classList.remove('flex');
+                canvasPlaceholder.classList.remove('hidden');
+                progressSpinner.classList.add('animate-spin');
+
+                const steps = [
+                    { pct: 25, label: "1. Scripting scene narrative...", badge: "badge-step-1" },
+                    { pct: 50, label: "2. Storyboarding frame layouts...", badge: "badge-step-2" },
+                    { pct: 75, label: "3. Rendering via Modal API GPU...", badge: "badge-step-3" },
+                    { pct: 100, label: "4. Assembling production payload...", badge: "badge-step-4" }
+                ];
+
+                let currentProgress = 0;
+
+                const interval = setInterval(() => {
+                    currentProgress += 2;
+                    progressBar.style.width = `${currentProgress}%`;
+                    progressPercent.innerText = `${currentProgress}%`;
+
+                    // Highlight active pipeline badges
+                    if (currentProgress <= 25) {
+                        progressStepText.innerText = steps[0].label;
+                        document.getElementById('badge-step-1').className = "py-1 rounded bg-amber-500/20 text-amber-400 border border-amber-500/50 font-bold";
+                    } else if (currentProgress <= 50) {
+                        progressStepText.innerText = steps[1].label;
+                        document.getElementById('badge-step-2').className = "py-1 rounded bg-amber-500/20 text-amber-400 border border-amber-500/50 font-bold";
+                    } else if (currentProgress <= 75) {
+                        progressStepText.innerText = steps[2].label;
+                        document.getElementById('badge-step-3').className = "py-1 rounded bg-amber-500/20 text-amber-400 border border-amber-500/50 font-bold";
+                    } else {
+                        progressStepText.innerText = steps[3].label;
+                        document.getElementById('badge-step-4').className = "py-1 rounded bg-amber-500/20 text-amber-400 border border-amber-500/50 font-bold";
+                    }
+
+                    playTactileClick(400 + currentProgress * 4);
+
+                    if (currentProgress >= 100) {
+                        clearInterval(interval);
+                        appState.isGenerating = false;
+                        progressSpinner.classList.remove('animate-spin');
+                        progressStepText.innerText = "Production Completed!";
+
+                        // Reveal completion render and trigger dopamine reward glow
+                        canvasPlaceholder.classList.add('hidden');
+                        canvasRendered.classList.remove('hidden');
+                        canvasRendered.classList.add('flex');
+                        storybookContainer.classList.add('dopamine-glow');
+
+                        playTactileClick(880);
+                    }
+                }, 100);
+            });
+        };
+    </script>
+</body>
+</html>
+```
